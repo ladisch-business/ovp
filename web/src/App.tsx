@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/Login'
 import HomePage from './pages/Home'
+import UploadPage from './pages/Upload'
 import { useAuth } from './store/auth'
 import { useEffect } from 'react'
 
@@ -27,6 +28,14 @@ export default function App() {
             element={
               <PrivateRoute>
                 <HomePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/upload"
+            element={
+              <PrivateRoute>
+                <UploadPage />
               </PrivateRoute>
             }
           />

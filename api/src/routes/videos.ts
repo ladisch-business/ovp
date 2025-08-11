@@ -1,8 +1,8 @@
 import { Router, type Request, type Response } from 'express'
 import { readVideos, writeVideos, type Video, pathJoin } from '../store.js'
 import { nanoid } from 'nanoid'
-import { unlink, rm } from 'fs/promises'
-
+import { rm } from 'fs/promises'
+import { DATA_DIR } from '../env.js'
 const router = Router()
 
 router.get('/', async (_req: Request, res: Response) => {
@@ -66,7 +66,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
   const next = list.filter(x => x.id !== id)
   await writeVideos(next)
   try {
-    await rm(pathJoin('/srv/docker/ovp/upload', id), { recursive: true, force: true })
+    await rm(pathJoin(DATA_DIR, 'upload', id), { recursive: true, force: true })
   } catch {}
   res.json({ ok: true })
 })
