@@ -10,6 +10,7 @@ RUN npm run build
 # runtime
 FROM node:20-alpine
 WORKDIR /app
+RUN apk add --no-cache curl
 ENV NODE_ENV=production
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
