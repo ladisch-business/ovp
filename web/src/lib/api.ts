@@ -4,7 +4,7 @@ let csrfToken: string | null = null
 
 export async function fetchCsrf(): Promise<string | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/auth/csrf`, { credentials: 'include' })
+    const res = await fetch(`${API_BASE}/auth/csrf`, { credentials: 'include' })
     if (!res.ok) return null
     const data = await res.json()
     csrfToken = data.csrfToken ?? null
@@ -29,7 +29,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
 }
 
 export async function login(username: string, password: string) {
-  const res = await apiFetch('/api/auth/login', {
+  const res = await apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password })
   })
@@ -37,6 +37,6 @@ export async function login(username: string, password: string) {
 }
 
 export async function logout() {
-  const res = await apiFetch('/api/auth/logout', { method: 'POST' })
+  const res = await apiFetch('/auth/logout', { method: 'POST' })
   return res.ok
 }
