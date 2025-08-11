@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import { apiFetch, API_BASE } from '../lib/api'
 
 const CHUNK_SIZE = 8 * 1024 * 1024
 
@@ -13,7 +13,7 @@ export default function UploadPage() {
     const file = inputRef.current?.files?.[0]
     if (!file) return
     setStatus('Initialisiere Upload...')
-    const initRes = await apiFetch('/api/uploads/init', {
+    const initRes = await apiFetch('/uploads/init', {
       method: 'POST',
       body: JSON.stringify({ filename: file.name, size: file.size, mime: file.type })
     })
@@ -28,7 +28,7 @@ export default function UploadPage() {
       form.append('chunk', chunk)
       form.append('index', String(i))
       setStatus(`Sende Chunk ${i + 1}/${totalChunks}...`)
-      await fetch((import.meta as any).env.VITE_API_BASE + `/api/uploads/${id}`, {
+      await fetch(`${API_BASE}/uploads/${id}`, {
         method: 'PATCH',
         body: form,
         credentials: 'include'
@@ -38,7 +38,7 @@ export default function UploadPage() {
     }
 
     setStatus('Fasse Chunks zusammen...')
-    await apiFetch(`/api/uploads/${id}/concat`, {
+    await apiFetch(`/uploads/${id}/concat`, {
       method: 'POST',
       body: JSON.stringify({ parts: Math.ceil(file.size / CHUNK_SIZE) })
     })
@@ -46,7 +46,7 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <div>
       <h1 className="text-2xl font-semibold mb-4">Upload</h1>
       <input ref={inputRef} type="file" className="mb-4" />
       <button

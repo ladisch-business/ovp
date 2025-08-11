@@ -13,7 +13,8 @@ export const useAuth = create<AuthState>((set) => ({
   loggedIn: false,
   error: null,
   init: async () => {
-    await fetchCsrf()
+    const token = await fetchCsrf()
+    if (token) set({ loggedIn: true })
   },
   login: async (username: string, password: string) => {
     set({ error: null })
