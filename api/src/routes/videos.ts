@@ -5,8 +5,26 @@ import { rm } from 'fs/promises'
 import { DATA_DIR } from '../env.js'
 const router = Router()
 
-router.get('/', async (_req: Request, res: Response) => {
-  const list = await readVideos()
+router.get('/', async (req: Request, res: Response) => {
+  const { q, mode = 'both', category, tag } = req.query as {
+    q?: string
+    mode?: 'title' | 'tags' | 'both'
+    category?: string
+    tag?: string
+  }
+  let list = await readVideos()
+  if (category) list = list.filter(v => v.category === category)
+  if (tag) list = list.filter(v => v.tags.includes(tag))
+  if (q) {
+    const query = q.toLowerCase()
+    list = list.filter(v => {
+      const inTitle = v.title.toLowerCase().includes(query)
+      const inTags = v.tags.some(t => t.toLowerCase().includes(query))
+      if (mode === 'title') return inTitle
+      if (mode === 'tags') return inTags
+      return inTitle || inTags
+    })
+  }
   res.json(list)
 })
 
