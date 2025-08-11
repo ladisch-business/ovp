@@ -1,0 +1,34 @@
+services:
+  api:
+    build:
+      context: ./api
+    environment:
+      - AUTH_USER=${AUTH_USER}
+      - AUTH_PASS=${AUTH_PASS}
+      - PORT=${PORT_API:-8080}
+      - OVP_DATA_DIR=${OVP_DATA_DIR:-/srv/docker/ovp}
+      - API_CORS_ORIGIN=http://localhost:${PORT_WEB:-5173}
+      - NODE_ENV=production
+    volumes:
+      - ${OVP_DATA_DIR:-/srv/docker/ovp}:${OVP_DATA_DIR:-/srv/docker/ovp}
+    ports:
+      - "${PORT_API:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    environment:
+      - VITE_API_BASE=http://localhost:${PORT_API:-8080}
+      - NODE_ENV=production
+    ports:
+      - "${PORT_WEB:-5173}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

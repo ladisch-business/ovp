@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install API deps
+        run: cd api && npm install
+      - name: Install WEB deps
+        run: cd web && npm install
+      - name: Lint API
+        run: cd api && npm run lint
+      - name: Lint WEB
+        run: cd web && npm run lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install API deps
+        run: cd api && npm install
+      - name: Install WEB deps
+        run: cd web && npm install
+      - name: Typecheck API
+        run: cd api && npm run typecheck
+      - name: Typecheck WEB
+        run: cd web && npm run typecheck
+
+  build:
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install API deps
+        run: cd api && npm install
+      - name: Install WEB deps
+        run: cd web && npm install
+      - name: Build API
+        run: cd api && npm run build
+      - name: Build WEB
+        run: cd web && npm run build
+
+  security:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Audit API
+        run: cd api && npm audit --audit-level=high || true
+      - name: Audit WEB
+        run: cd web && npm audit --audit-level=high || true
