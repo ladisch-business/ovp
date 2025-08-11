@@ -1,4 +1,4 @@
-const API_BASE = (import.meta as any).env.VITE_API_BASE || '/api'
+export const API_BASE = (import.meta as any).env.VITE_API_BASE || '/api'
 
 let csrfToken: string | null = null
 

@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/Login'
 import HomePage from './pages/Home'
 import UploadPage from './pages/Upload'
+import FavoritesPage from './pages/Favorites'
+import SettingsPage from './pages/Settings'
+import Layout from './components/Layout'
 import { useAuth } from './store/auth'
 import { useEffect } from 'react'
 
@@ -27,7 +30,9 @@ export default function App() {
             path="/"
             element={
               <PrivateRoute>
-                <HomePage />
+                <Layout>
+                  <HomePage />
+                </Layout>
               </PrivateRoute>
             }
           />
@@ -35,7 +40,29 @@ export default function App() {
             path="/upload"
             element={
               <PrivateRoute>
-                <UploadPage />
+                <Layout>
+                  <UploadPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <FavoritesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <SettingsPage />
+                </Layout>
               </PrivateRoute>
             }
           />
