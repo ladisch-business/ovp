@@ -13,7 +13,7 @@ export default function UploadPage() {
     const file = inputRef.current?.files?.[0]
     if (!file) return
     setStatus('Initialisiere Upload...')
-    const initRes = await apiFetch('/api/uploads/init', {
+    const initRes = await apiFetch('/uploads/init', {
       method: 'POST',
       body: JSON.stringify({ filename: file.name, size: file.size, mime: file.type })
     })
