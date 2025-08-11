@@ -4,33 +4,42 @@ Diese Anleitung ermöglicht das Starten der OVP-Stacks direkt über Portainer al
 
 Hinweis: Portainer baut die Images direkt aus diesem Repository anhand der docker-compose.yml, es ist keine Registry erforderlich.
 
-## URLs und Default-Zugangsdaten
-- Web-UI: http://<SERVER-IP>:5173
-- API-Health: http://<SERVER-IP>:5173/api/health
-- Login: Benutzername `username`, Passwort `password`
+Wichtig: Die Services publishen keine Ports. Der Zugriff erfolgt über den Nginx Proxy Manager (NPM) im gemeinsamen Docker-Netzwerk.
 
-Diese Defaults sind im Portainer-Stack vorkonfiguriert. Sie können später in Portainer via Umgebungsvariablen überschrieben werden, falls gewünscht.
+## URLs und Default-Zugangsdaten
+- Öffentliche URL: über deine Domain via NPM (siehe unten)
+- API-Health (über Web-Container-Proxy): https://deine-domain.tld/api/health sollte {"ok":true} liefern
+- Login: Benutzername `username`, Passwort `password`
 
 ## Portainer – Stack aus GitHub starten
 1. In Portainer: Stacks → Add stack
-2. Option "Web editor" wählen.
-3. Komponieren Sie via Repository-URL:
+2. Build method: Repository
+3. Repository Einstellungen:
    - Repository URL: https://github.com/ladisch-business/ovp.git
    - Repository reference: refs/heads/main
    - Compose path: docker-compose.yml
-4. Optional: Nichts ändern – die Defaults funktionieren out-of-the-box.
-5. "Deploy the stack" klicken.
+4. Environment variables (optional):
+   - PROXY_NETWORK: Name des externen Docker-Netzwerks, in dem dein Nginx Proxy Manager läuft (Default: `proxy`)
+   - OVP_DATA_DIR: Pfad für persistente Daten (Default: `/srv/docker/ovp`)
+5. Vor Deploy sicherstellen, dass das externe Netzwerk existiert:
+   - In Docker: `docker network create proxy` (falls du den Default-Namen nutzt)
+   - Oder in Portainer: Networks → Add network → Name = PROXY_NETWORK
+6. Deploy the stack
 
-Alternativ per Raw-URL:
-- Öffnen Sie die Raw-Ansicht der Datei `docker-compose.yml` im Browser und kopieren Sie den Inhalt in den Portainer-Editor.
+## Nginx Proxy Manager – Einstellungen
+Erzeuge einen Proxy Host:
+- Domain Names: deine Domain (z. B. ovp.deine-domain.tld)
+- Scheme: http
+- Forward Hostname / IP: web
+- Forward Port: 80
+- Websockets: aktiviert
+- Block Common Exploits: aktiviert
+- SSL: Request a new certificate (Let’s Encrypt), Force SSL, HTTP/2 aktivieren
 
-## Deployment über Repository (Build in Portainer)
-Portainer baut die Images direkt aus diesem Repository anhand der `docker-compose.yml` (mit `build:` Sektionen). Es ist keine zusätzliche Konfiguration nötig und keine Registry erforderlich. Einfach den Stack wie oben beschrieben anlegen und „Deploy the stack“ klicken.
+Voraussetzung: NPM-Container und dieser Stack teilen dasselbe Docker-Netzwerk (PROXY_NETWORK). Falls dein NPM in einem Netzwerk mit anderem Namen läuft, setze PROXY_NETWORK entsprechend beim Stack-Deploy.
 
-## Ports und Volumes
-- Web: Port 5173 → Containerport 80
-- API: Port 8080 → Containerport 8080
-- Persistente Daten (JSON/Uploads): Standardpfad `/srv/docker/ovp` wird als Volume gemountet:
+## Volumes (persistente Daten)
+- Persistente Daten (JSON/Uploads): Standardpfad `/srv/docker/ovp` wird in den API-Container gemountet:
   - Host: `${OVP_DATA_DIR:-/srv/docker/ovp}`
   - Container: `${OVP_DATA_DIR:-/srv/docker/ovp}`
 
@@ -38,22 +47,19 @@ Portainer baut die Images direkt aus diesem Repository anhand der `docker-compos
 Alle Variablen sind bereits mit sinnvollen Defaults gesetzt:
 - AUTH_USER=username
 - AUTH_PASS=password
-- PORT_API=8080
-- PORT_WEB=5173
 - OVP_DATA_DIR=/srv/docker/ovp
 - VITE_API_BASE=/api
 - API_CORS_ORIGIN=http://localhost:5173
-
-Sie können diese Werte bei Bedarf in Portainer anpassen (Stack-Umgebungsvariablen).
+- PROXY_NETWORK=proxy
 
 ## Lokale Entwicklung (optional)
-- Lokales Compose (mit Build): `docker compose up -d`
+- Lokales Compose (mit Build): `docker compose up -d` (lokal ggf. Ports hinzufügen)
 - CI ist grün; Tests/Lint/Build laufen in GitHub Actions.
 
 Viel Erfolg beim Deploy!
 # OVP
 
-Dieses Repository enthält die Implementierung der selbstgehosteten Videoplattform gemäß lastenheft.md.
+Dieses Repository enthält die Implementierung der selbstgehostelten Videoplattform gemäß lastenheft.md.
 ## Entwicklung
 
 1) .env anlegen (siehe `.env.example`)
